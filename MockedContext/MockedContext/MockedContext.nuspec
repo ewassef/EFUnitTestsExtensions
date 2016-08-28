@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>EntityFramework.Testing.Helpers</id>
+    <version>$version$</version>
+    <title>Entity Framework Testing Helpers</title>
+    <authors>Eddie Wassef</authors>
+    <owners>Eddie Wassef</owners>
+    <licenseUrl>https://raw.githubusercontent.com/ewassef/EFUnitTestsExtensions/master/LICENSE</licenseUrl>
+    <projectUrl>https://www.github.com/ewassef/EFUnitTestsExtensions</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Just a gross over simplification of how to test EF6+. This helper uses the guidance from the EF team and wraps it in a helper class that allows it to return Moq objects for unit testing.
+    Its really just a way to hide the cruft so we can all do better testing.</description>
+    <releaseNotes>Added mocking helper methods and unit tests</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>EntityFramework Testing MOQ EF</tags>
+    <dependencies>
+      <dependency id="Castle.Core" version="3.3.3"  />
+      <dependency id="EntityFramework" version="6.1.3"  />
+      <dependency id="Moq" version="4.5.21" />
+    </dependencies>
+  </metadata>
+</package>
