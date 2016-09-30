@@ -12,11 +12,11 @@ namespace MockedContext
     public class InjectableMockedContext<TContext> where TContext : DbContext
     {
         private int _changeCount = 0;
-        private Mock<TContext> _mockConext;
+        private readonly Mock<TContext> _mockConext;
 
-        public InjectableMockedContext()
+        public InjectableMockedContext(params object [] constructorArguments)
         {
-            _mockConext = new Mock<TContext>();
+            _mockConext = new Mock<TContext>(constructorArguments);
             _mockConext.Setup(x => x.SaveChanges()).Returns(() =>
             {
                 var copy = _changeCount;
@@ -32,39 +32,39 @@ namespace MockedContext
             });
         }
 
-        public Mock<TContext> MockedContext { get { return _mockConext; } }
+        public Mock<TContext> MockedContext => _mockConext;
 
         public Mock<DbSet<TEntity>> MockEntity<TEntity>(Expression<Func<TContext, DbSet<TEntity>>> dbSetToMock,
             List<TEntity> seed = null) where TEntity : class
         {
-            Mock<DbSet<TEntity>> _innerMock = new Mock<DbSet<TEntity>>();
+            Mock<DbSet<TEntity>> innerMock = new Mock<DbSet<TEntity>>();
             if (seed == null)
                 seed = new List<TEntity>();
 
             var queryableSeed = seed.AsQueryable();
 
-            _innerMock.As<IDbAsyncEnumerable<TEntity>>()
+            innerMock.As<IDbAsyncEnumerable<TEntity>>()
                 .Setup(m => m.GetAsyncEnumerator())
                 .Returns(new TestDbAsyncEnumerator<TEntity>(queryableSeed.GetEnumerator()));
 
-            _innerMock.As<IQueryable<TEntity>>()
+            innerMock.As<IQueryable<TEntity>>()
                 .Setup(m => m.Provider)
                 .Returns(new TestDbAsyncQueryProvider<TEntity>(queryableSeed.Provider));
 
-            _innerMock.As<IQueryable<TEntity>>().Setup(m => m.Expression).Returns(queryableSeed.Expression);
-            _innerMock.As<IQueryable<TEntity>>().Setup(m => m.ElementType).Returns(queryableSeed.ElementType);
-            _innerMock.As<IQueryable<TEntity>>()
+            innerMock.As<IQueryable<TEntity>>().Setup(m => m.Expression).Returns(queryableSeed.Expression);
+            innerMock.As<IQueryable<TEntity>>().Setup(m => m.ElementType).Returns(queryableSeed.ElementType);
+            innerMock.As<IQueryable<TEntity>>()
                 .Setup(m => m.GetEnumerator())
                 .Returns(() => queryableSeed.GetEnumerator());
 
-            _innerMock.Setup(x => x.Add(It.IsAny<TEntity>())).Returns<TEntity>(e =>
+            innerMock.Setup(x => x.Add(It.IsAny<TEntity>())).Returns<TEntity>(e =>
             {
                 _changeCount++;
                 seed.Add(e);
                 queryableSeed = seed.AsQueryable();
                 return e;
             });
-            _innerMock.Setup(x => x.AddRange(It.IsAny<IEnumerable<TEntity>>())).Returns<IEnumerable<TEntity>>(e =>
+            innerMock.Setup(x => x.AddRange(It.IsAny<IEnumerable<TEntity>>())).Returns<IEnumerable<TEntity>>(e =>
             {
                 _changeCount += e.Count();
                 seed.AddRange(e);
@@ -72,8 +72,8 @@ namespace MockedContext
                 return e;
             });
 
-            _mockConext.Setup(dbSetToMock).Returns(_innerMock.Object);
-            return _innerMock;
+            _mockConext.Setup(dbSetToMock).Returns(innerMock.Object);
+            return innerMock;
         }
     }
 }
